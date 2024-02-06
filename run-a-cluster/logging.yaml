@@ -1,0 +1,46 @@
+version: "3"
+
+services:
+
+  loki:
+    container_name: loki
+    image: grafana/loki:latest
+    network_mode: "host"
+    ports:
+      - "3100:3100"
+    volumes:
+      - loki-data-volume:/loki
+    command: -config.file=/etc/loki/local-config.yaml
+
+  grafana:
+    container_name: grafana
+    image: grafana/grafana:latest
+    network_mode: "host"
+    entrypoint:
+      - sh
+      - -euc
+      - |
+        mkdir -p /etc/grafana/provisioning/datasources
+        cat <<EOF > /etc/grafana/provisioning/datasources/ds.yaml
+        apiVersion: 1
+        datasources:
+          - name: Loki
+            type: loki
+            access: proxy
+            url: http://localhost:3100
+        EOF
+        /run.sh
+    depends_on:
+      - loki
+
+  promtail:
+    container_name: promtail
+    image: grafana/promtail:latest
+    network_mode: "host"
+    volumes:
+      - ./promtail/promtail-local-config.yaml:/etc/promtail/config.yaml:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: -config.file=/etc/promtail/config.yaml
+
+volumes:
+  loki-data-volume:

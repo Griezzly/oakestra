@@ -1,0 +1,28 @@
+sources:
+  in:
+    type: "stdin"
+
+#transforms:
+#  remap_syslog:
+#    inputs:
+#      - "in"
+#    type:   "remap"
+#    source: |
+#            . = merge(., "test")
+
+sinks:
+#  out:
+#    inputs:
+#      - "in"
+#    type: "console"
+#    encoding:
+#      codec: "text"
+  loki:
+    type: loki
+    labels:
+      source: vector
+    encoding:
+      codec: logfmt
+    inputs:
+      - "in"
+    endpoint: http://localhost:3100
