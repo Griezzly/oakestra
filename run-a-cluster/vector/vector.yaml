@@ -2,13 +2,28 @@ sources:
   in:
     type: "stdin"
 
-#transforms:
-#  remap_syslog:
-#    inputs:
-#      - "in"
-#    type:   "remap"
-#    source: |
-#            . = merge(., "test")
+transforms:
+  remap_nodeengine_log:
+    inputs:
+      - "in"
+    type:   "remap"
+    source: |
+      host = .host
+      .= parse_regex(.message, r'^(?P<severity>\w+)-(?P<timestamp>\d+/\d+/\d+ \d+:\d+:\d+) (?P<code>[\w.:\d]+) (?P<action>[\w\s-]+) (?P<message>.*)$') ?? .
+      .message = parse_json(.message) ?? .message
+      .timestamp = parse_timestamp(.timestamp, "%Y/%m/%d %H:%M:%S") ?? now()
+      .host = host
+#      .= parse_regex(.message, r'^(?P<severity>\w+)-(?P<timestamp>\d+/\d+/\d+ \d+:\d+:\d+) (?P<code>[\w.:\d]+) (?P<action>[\w\s-]+) (?P<message>.*)$') ?? .
+#      .message = parse_json(.message) ?? .message
+#      .timestamp = parse_timestamp(.timestamp, "%Y/%m/%d %H:%M:%S") ?? now()
+#      Parse most of NodeEngines logs
+#      host = .host
+#      .= parse_regex(.message, r'^(?P<severity>\w+)-(?P<timestamp>\d+/\d+/\d+ \d+:\d+:\d+) (?P<code>[\w.:\d]+) (?P<action>[\w\s-]+) (?P<message>.*)$') ?? .
+#      .message = parse_json(.message) ?? .message
+#      .timestamp = parse_timestamp(.timestamp, "%Y/%m/%d %H:%M:%S") ?? now()
+#      .host="Test"+ host ?? ""
+
+
 
 sinks:
 #  out:
@@ -16,13 +31,13 @@ sinks:
 #      - "in"
 #    type: "console"
 #    encoding:
-#      codec: "text"
+#      codec: "json"
   loki:
     type: loki
     labels:
       source: vector
     encoding:
-      codec: logfmt
+      codec: json
     inputs:
-      - "in"
+      - "remap_nodeengine_log"
     endpoint: http://localhost:3100
