@@ -3,7 +3,7 @@ sources:
     type: "stdin"
 
 transforms:
-  remap_nodeengine_log:
+  remap_netmanager_log:
     inputs:
       - "in"
     type:   "remap"
@@ -13,7 +13,7 @@ transforms:
       .message = parse_json(.message) ?? .message
       .timestamp = parse_timestamp(.timestamp, "%Y/%m/%d %H:%M:%S") ?? now()
       .host = host
-      .app = "nodeengine"
+      .app = "netmanager"
 #      .= parse_regex(.message, r'^(?P<severity>\w+)-(?P<timestamp>\d+/\d+/\d+ \d+:\d+:\d+) (?P<code>[\w.:\d]+) (?P<action>[\w\s-]+) (?P<message>.*)$') ?? .
 #      .message = parse_json(.message) ?? .message
 #      .timestamp = parse_timestamp(.timestamp, "%Y/%m/%d %H:%M:%S") ?? now()
@@ -40,5 +40,5 @@ sinks:
     encoding:
       codec: json
     inputs:
-      - "remap_nodeengine_log"
+      - "remap_netmanager_log"
     endpoint: http://192.168.1.77:3100
