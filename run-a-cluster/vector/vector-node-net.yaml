@@ -1,11 +1,11 @@
 sources:
-  in:
+  net_in:
     type: "stdin"
 
 transforms:
   remap_netmanager_log:
     inputs:
-      - "in"
+      - "net_in"
     type:   "remap"
     source: |
       host = .host
@@ -36,9 +36,11 @@ sinks:
   loki:
     type: loki
     labels:
-      source: vector
+      source: netmanager
+      forwarder: vector
     encoding:
       codec: json
     inputs:
       - "remap_netmanager_log"
     endpoint: http://192.168.1.77:3100
+    out_of_order_action: "accept"

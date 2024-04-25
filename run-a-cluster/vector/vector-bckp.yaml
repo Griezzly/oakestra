@@ -13,6 +13,7 @@ transforms:
       .message = parse_json(.message) ?? .message
       .timestamp = parse_timestamp(.timestamp, "%Y/%m/%d %H:%M:%S") ?? now()
       .host = host
+      .app = "nodeengine"
 #      .= parse_regex(.message, r'^(?P<severity>\w+)-(?P<timestamp>\d+/\d+/\d+ \d+:\d+:\d+) (?P<code>[\w.:\d]+) (?P<action>[\w\s-]+) (?P<message>.*)$') ?? .
 #      .message = parse_json(.message) ?? .message
 #      .timestamp = parse_timestamp(.timestamp, "%Y/%m/%d %H:%M:%S") ?? now()
@@ -35,9 +36,11 @@ sinks:
   loki:
     type: loki
     labels:
-      source: vector
+      source: nodeengine
+      forwarder: vector
     encoding:
       codec: json
     inputs:
       - "remap_nodeengine_log"
-    endpoint: http://localhost:3100
+    endpoint: http://192.168.1.77:3100
+    out_of_order_action: "accept"
